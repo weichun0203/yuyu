@@ -1,32 +1,94 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <!-- GA4 追蹤碼 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2F079YMSFW"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-2F079YMSFW');
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>每週行程計畫表</title>
+    
+    <!-- Title 規則: 移除常溫相關字樣 -->
+    <title>每週行程計畫表｜Weekly Schedule</title>
+    
+    <!-- Meta & SEO -->
+    <meta name="description" content="專屬的每週行程計畫表，幫助您在舒適的步調中，梳理生活的每一刻。">
+    <meta property="og:title" content="每週行程計畫表｜Weekly Schedule">
+    <meta property="og:description" content="專屬的每週行程計畫表，幫助您在舒適的步調中，梳理生活的每一刻。">
+    <meta property="og:type" content="website">
+
+    <!-- JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "每週行程計畫表",
+      "alternateName": "Weekly Schedule",
+      "url": "https://weichun0203.github.io/weeklyschedule/",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "All"
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 設定整合品牌 CIS -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                paper: '#fdfbf7',
+                ink: '#4a4a4a',
+                sage: '#8da399',
+                clay: '#d4a59a',
+                sand: '#e6e2dd',
+              }
+            },
+            boxShadow: {
+              soft: '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+            },
+            fontFamily: {
+              sans: ['"Noto Sans TC"', 'sans-serif'],
+              serif: ['"Noto Serif TC"', 'serif'],
+            }
+          }
+        }
+      }
+    </script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;700&display=swap');
+        
         body {
+            /* 品牌字體與背景設定 */
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f8fafc;
-            /* 避免 iOS 彈性滾動造成的怪異體驗 */
+            background-color: #fdfbf7; /* brand-paper */
+            /* 模擬紙張纖維質感的微噪點 SVG */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            color: #4a4a4a; /* brand-ink */
             overscroll-behavior-y: none; 
         }
         
-        /* 隱藏原生滾動條，使用自訂樣式 */
+        /* 隱藏原生滾動條，使用自訂品牌樣式 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-thumb { background: #e6e2dd; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8da399; }
 
-        /* 當前時間紅線樣式 */
+        /* 當前時間紅線樣式 (改為低調的陶土紅 clay) */
         .current-time-line {
             position: absolute;
             left: 0;
             right: 0;
-            border-top: 2px dashed #ef4444;
+            border-top: 2px dashed #d4a59a;
             z-index: 35;
             pointer-events: none;
         }
@@ -34,24 +96,25 @@
             position: absolute;
             width: 8px;
             height: 8px;
-            background-color: #ef4444;
+            background-color: #d4a59a;
             border-radius: 50%;
             left: -4px;
             top: -4px;
         }
 
-        /* 日曆視圖基礎樣式 */
+        /* 日曆視圖基礎樣式 (融入紙張質感) */
         .calendar-wrapper {
             display: flex;
             flex-direction: column;
-            background: white;
+            background: rgba(255, 255, 255, 0.7); /* 半透明白，透出噪點 */
+            backdrop-filter: blur(4px);
         }
         .calendar-header {
             position: sticky;
             top: 0;
             z-index: 50; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            background: #f1f5f9;
+            background: rgba(253, 251, 247, 0.95); /* brand-paper */
+            backdrop-filter: blur(8px);
         }
         .calendar-grid-container {
             flex: 1;
@@ -62,10 +125,8 @@
         .calendar-grid {
             display: flex;
             position: relative;
-            background-color: white;
             width: 100%;
         }
-        /* 電腦版強制寬度以保持 7 天排版 */
         @media (min-width: 768px) {
             .calendar-grid { min-width: 800px; }
             .calendar-grid-container { overflow-x: auto; }
@@ -74,8 +135,8 @@
         .time-axis {
             width: 50px;
             flex-shrink: 0;
-            border-right: 1px solid #e2e8f0;
-            background-color: #f8fafc;
+            border-right: 1px solid #e6e2dd;
+            background-color: transparent;
             position: sticky;
             left: 0;
             z-index: 40; 
@@ -86,7 +147,7 @@
 
         .day-column {
             flex: 1;
-            border-right: 1px solid #e2e8f0;
+            border-right: 1px solid #e6e2dd;
             position: relative;
         }
         .day-column:last-child {
@@ -96,7 +157,7 @@
         .time-slot-line {
             position: absolute;
             width: 100%;
-            border-bottom: 1px dashed #e2e8f0;
+            border-bottom: 1px dashed #e6e2dd;
             left: 0;
             z-index: 1;
             pointer-events: none;
@@ -113,7 +174,6 @@
             transition: transform 0.15s ease, box-shadow 0.15s ease;
             cursor: pointer;
             border-left-width: 4px;
-            /* 預防文字選取干擾觸控 */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -122,17 +182,17 @@
         }
         .event-card:hover {
             z-index: 30;
-            transform: scale(1.02);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            transform: scale(1.01);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); /* brand-soft */
         }
         
         /* 自訂顏色選擇器 */
         .color-option input:checked + div {
             transform: scale(1.15);
-            box-shadow: 0 0 0 2px white, 0 0 0 4px #cbd5e1;
+            box-shadow: 0 0 0 2px #fdfbf7, 0 0 0 4px #8da399; /* brand-sage ring */
         }
 
-        /* Modal 手機版由下往上滑出設計 */
+        /* Modal 動畫 */
         .modal-content {
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -159,45 +219,55 @@
         }
     </style>
 </head>
-<body class="text-slate-800 flex flex-col h-[100dvh] overflow-hidden">
+<body class="flex flex-col h-[100dvh] overflow-hidden">
     
-    <!-- -->
-    <header class="bg-white shadow-sm z-20 flex-shrink-0">
-        <div class="max-w-7xl mx-auto px-4 py-3 md:py-4 flex flex-col md:flex-row justify-between md:items-center gap-3">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 flex items-center">
-                        <i class="fa-regular fa-calendar-days text-blue-600 mr-2"></i>行程計畫表
-                    </h1>
-                </div>
-                <!-- 電腦版新增按鈕 -->
-                <button onclick="openModalFromButton()" class="hidden md:flex bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors items-center text-sm">
-                    <i class="fa-solid fa-plus mr-2"></i>新增計畫
-                </button>
-            </div>
+    <!-- 品牌標題區塊 -->
+    <header class="relative z-20 flex-shrink-0 pt-8 pb-4 px-4 md:px-8 max-w-7xl mx-auto w-full">
+        <div class="relative flex flex-col md:flex-row items-end justify-center">
             
-            <div class="flex items-center justify-between md:justify-end gap-4">
-                <div class="flex items-center text-xs gap-3 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-                    <span class="flex items-center text-slate-600 font-medium"><span class="w-3 h-3 rounded bg-blue-100 border border-blue-400 mr-1.5"></span>固定</span>
-                    <span class="flex items-center text-slate-600 font-medium"><span class="w-3 h-3 rounded bg-green-100 border border-green-400 mr-1.5"></span>我的計畫</span>
-                </div>
+            <!-- 互動性強的標題：置中對齊 -->
+            <div class="text-center w-full">
+                <!-- 主標題 -->
+                <h1 class="text-2xl md:text-3xl font-bold text-brand-ink tracking-wide">
+                    每週行程計畫表
+                </h1>
                 
-                <!-- 手機版日期切換器 -->
-                <div class="md:hidden flex items-center bg-blue-50 text-blue-700 rounded-lg px-2 py-1 shadow-inner border border-blue-100">
-                    <button onclick="changeMobileDay(-1)" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-200 transition-colors"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span id="mobile-day-label" class="font-bold w-12 text-center text-sm">週一</span>
-                    <button onclick="changeMobileDay(1)" class="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-200 transition-colors"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
+                <!-- 引言在標題下方 -->
+                <p class="font-serif text-brand-sage/80 text-xs md:text-sm mt-3 italic">
+                    「在舒適的步調中，梳理生活的每一刻。」
+                </p>
             </div>
         </div>
     </header>
 
-    <!-- -->
-    <div class="flex-1 w-full flex flex-col overflow-hidden max-w-7xl mx-auto md:p-4 bg-slate-50 md:bg-transparent">
-        <div class="calendar-wrapper flex-1 md:rounded-xl shadow-sm border-t md:border border-slate-200 overflow-hidden relative">
+    <!-- 工具列區塊 -->
+    <div class="max-w-7xl mx-auto w-full px-4 mb-2 flex justify-between items-center z-20">
+        <!-- 電腦版新增按鈕 -->
+        <button onclick="openModalFromButton()" class="hidden md:flex bg-brand-sage hover:bg-brand-sage/90 text-white px-5 py-2 rounded-full font-medium shadow-soft transition-all items-center text-sm tracking-wider">
+            <i class="fa-solid fa-plus mr-2"></i>新增計畫
+        </button>
+        
+        <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+            <div class="flex items-center text-xs gap-4 bg-white/60 px-4 py-2 rounded-full border border-brand-sand backdrop-blur-sm">
+                <span class="flex items-center text-brand-ink font-medium"><span class="w-3 h-3 rounded-full bg-brand-sand/50 border border-brand-sand mr-1.5"></span>常態</span>
+                <span class="flex items-center text-brand-ink font-medium"><span class="w-3 h-3 rounded-full bg-brand-sage/20 border border-brand-sage mr-1.5"></span>我的計畫</span>
+            </div>
+            
+            <!-- 手機版日期切換器 -->
+            <div class="md:hidden flex items-center bg-white/60 text-brand-ink rounded-full px-2 py-1 shadow-sm border border-brand-sand backdrop-blur-sm">
+                <button onclick="changeMobileDay(-1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-sand/50 transition-colors text-brand-sage"><i class="fa-solid fa-chevron-left"></i></button>
+                <span id="mobile-day-label" class="font-bold w-12 text-center text-sm tracking-wide">週一</span>
+                <button onclick="changeMobileDay(1)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-sand/50 transition-colors text-brand-sage"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日曆主體 -->
+    <div class="flex-1 w-full flex flex-col overflow-hidden max-w-7xl mx-auto md:px-4 pb-4">
+        <div class="calendar-wrapper flex-1 md:rounded-2xl border-t md:border border-brand-sand overflow-hidden relative shadow-soft">
             
             <!-- 星期標題列 -->
-            <div class="calendar-header flex border-b border-slate-200" id="calendar-header-row">
+            <div class="calendar-header flex border-b border-brand-sand" id="calendar-header-row">
                 <div class="time-axis border-none bg-transparent"></div> <!-- 左上角留白 -->
                 <!-- JS 動態生成 7 天的表頭 -->
             </div>
@@ -213,36 +283,39 @@
         </div>
     </div>
 
+    <!-- 頁尾宣告 -->
+    <footer class="text-center py-3 text-[10px] md:text-xs text-brand-ink/50 font-serif tracking-widest flex-shrink-0 z-20">
+        &copy; 2026 每週行程計畫表 Weekly Schedule.
+    </footer>
+
     <!-- 手機版懸浮新增按鈕 (FAB) -->
-    <button onclick="openModalFromButton()" class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-[0_4px_12px_rgba(37,99,235,0.4)] flex items-center justify-center text-2xl z-[60] active:scale-95 transition-transform">
+    <button onclick="openModalFromButton()" class="md:hidden fixed bottom-16 right-6 w-14 h-14 bg-brand-sage text-white rounded-full shadow-soft flex items-center justify-center text-2xl z-[60] active:scale-95 transition-transform">
         <i class="fa-solid fa-plus"></i>
     </button>
 
-    <!-- -->
     <!-- 新增/編輯計畫 Modal -->
-    <div id="plan-modal" class="fixed inset-0 bg-slate-900/40 hidden items-end md:items-center justify-center z-[100] backdrop-blur-sm transition-opacity opacity-0">
-        <div class="modal-content bg-white w-full max-w-md rounded-t-2xl md:rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
+    <div id="plan-modal" class="fixed inset-0 bg-brand-ink/20 hidden items-end md:items-center justify-center z-[100] backdrop-blur-sm transition-opacity opacity-0">
+        <div class="modal-content bg-brand-paper w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-soft flex flex-col max-h-[90vh] border border-brand-sand">
             
-            <div class="p-4 md:p-6 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl">
-                <h2 id="modal-title" class="text-lg md:text-xl font-bold flex items-center text-slate-800">
-                    <i class="fa-solid fa-calendar-plus text-blue-500 mr-2"></i>新增個人計畫
+            <div class="p-5 md:p-6 border-b border-brand-sand flex justify-between items-center bg-white/50 rounded-t-3xl backdrop-blur-md">
+                <h2 id="modal-title" class="text-lg md:text-xl font-bold flex items-center text-brand-ink tracking-wide">
+                    <i class="fa-solid fa-pen-nib text-brand-sage mr-3"></i>編寫計畫
                 </h2>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full bg-slate-50"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal()" class="text-brand-ink/40 hover:text-brand-ink w-8 h-8 flex items-center justify-center rounded-full bg-brand-sand/30 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             
-            <div class="p-4 md:p-6 overflow-y-auto">
+            <div class="p-5 md:p-6 overflow-y-auto">
                 <input type="hidden" id="plan-id"> 
 
-                <div class="space-y-4">
+                <div class="space-y-5">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">行程名稱</label>
-                        <!-- 使用 text-base 防止 iOS Safari 自動放大 -->
-                        <input type="text" id="plan-title" class="w-full text-base border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-300" placeholder="例如：讀書、運動、開會...">
+                        <label class="block text-sm font-medium text-brand-ink/80 mb-1.5 tracking-wide">計畫名稱</label>
+                        <input type="text" id="plan-title" class="w-full text-base border border-brand-sand rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-sage/50 focus:border-brand-sage outline-none transition-all placeholder-brand-ink/30 bg-white/80" placeholder="例如：品牌會議、閱讀時光...">
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">日期</label>
-                        <select id="plan-day" class="w-full text-base border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
+                        <label class="block text-sm font-medium text-brand-ink/80 mb-1.5 tracking-wide">日期</label>
+                        <select id="plan-day" class="w-full text-base border border-brand-sand rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-sage/50 focus:border-brand-sage outline-none bg-white/80">
                             <option value="1">星期一</option>
                             <option value="2">星期二</option>
                             <option value="3">星期三</option>
@@ -255,121 +328,117 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">開始時間</label>
-                            <input type="time" id="plan-start" class="w-full text-base border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
+                            <label class="block text-sm font-medium text-brand-ink/80 mb-1.5 tracking-wide">開始時間</label>
+                            <input type="time" id="plan-start" class="w-full text-base border border-brand-sand rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-sage/50 focus:border-brand-sage outline-none bg-white/80">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">結束時間</label>
-                            <input type="time" id="plan-end" class="w-full text-base border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white">
+                            <label class="block text-sm font-medium text-brand-ink/80 mb-1.5 tracking-wide">結束時間</label>
+                            <input type="time" id="plan-end" class="w-full text-base border border-brand-sand rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-sage/50 focus:border-brand-sage outline-none bg-white/80">
                         </div>
                     </div>
 
-                    <!-- 顏色選擇器 -->
+                    <!-- 品牌色彩選擇器 -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">標籤顏色</label>
+                        <label class="block text-sm font-medium text-brand-ink/80 mb-2 tracking-wide">心情 / 標籤色彩</label>
                         <div class="flex gap-4">
                             <label class="color-option cursor-pointer relative">
-                                <input type="radio" name="plan-color" value="blue" class="hidden">
-                                <div class="w-7 h-7 rounded-full bg-blue-400 border border-blue-500 transition-transform"></div>
+                                <input type="radio" name="plan-color" value="sage" class="hidden" checked>
+                                <div class="w-8 h-8 rounded-full bg-[#8da399] border-2 border-white shadow-sm transition-transform"></div>
                             </label>
                             <label class="color-option cursor-pointer relative">
-                                <input type="radio" name="plan-color" value="green" class="hidden" checked>
-                                <div class="w-7 h-7 rounded-full bg-green-400 border border-green-500 transition-transform"></div>
+                                <input type="radio" name="plan-color" value="clay" class="hidden">
+                                <div class="w-8 h-8 rounded-full bg-[#d4a59a] border-2 border-white shadow-sm transition-transform"></div>
                             </label>
                             <label class="color-option cursor-pointer relative">
-                                <input type="radio" name="plan-color" value="purple" class="hidden">
-                                <div class="w-7 h-7 rounded-full bg-purple-400 border border-purple-500 transition-transform"></div>
+                                <input type="radio" name="plan-color" value="sand" class="hidden">
+                                <div class="w-8 h-8 rounded-full bg-[#e6e2dd] border-2 border-white shadow-sm transition-transform"></div>
                             </label>
                             <label class="color-option cursor-pointer relative">
-                                <input type="radio" name="plan-color" value="orange" class="hidden">
-                                <div class="w-7 h-7 rounded-full bg-orange-400 border border-orange-500 transition-transform"></div>
-                            </label>
-                            <label class="color-option cursor-pointer relative">
-                                <input type="radio" name="plan-color" value="pink" class="hidden">
-                                <div class="w-7 h-7 rounded-full bg-pink-400 border border-pink-500 transition-transform"></div>
+                                <input type="radio" name="plan-color" value="ink" class="hidden">
+                                <div class="w-8 h-8 rounded-full bg-[#4a4a4a] border-2 border-white shadow-sm transition-transform"></div>
                             </label>
                         </div>
                     </div>
 
                     <!-- 備註欄位 -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">備註事項 (選填)</label>
-                        <textarea id="plan-notes" rows="2" class="w-full text-base border border-slate-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-300 resize-none" placeholder="輸入詳細資訊..."></textarea>
+                        <label class="block text-sm font-medium text-brand-ink/80 mb-1.5 tracking-wide">靈感備註 (選填)</label>
+                        <textarea id="plan-notes" rows="2" class="w-full text-base border border-brand-sand rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-sage/50 focus:border-brand-sage outline-none transition-all placeholder-brand-ink/30 resize-none bg-white/80" placeholder="寫下一些想法..."></textarea>
                     </div>
 
                     <!-- 錯誤訊息提示區 -->
-                    <div id="error-msg" class="hidden text-red-500 text-sm font-medium mt-1 bg-red-50 p-2 rounded-md flex items-center">
+                    <div id="error-msg" class="hidden text-brand-clay text-sm font-medium mt-1 bg-brand-clay/10 p-3 rounded-lg flex items-center border border-brand-clay/20">
                         <i class="fa-solid fa-circle-exclamation mr-2 flex-shrink-0"></i><span id="error-text"></span>
                     </div>
                 </div>
             </div>
 
             <!-- Modal 底部按鈕區 -->
-            <div class="p-4 md:p-6 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center rounded-b-2xl mt-auto">
-                <button type="button" id="delete-btn" onclick="deleteCurrentPlan()" class="hidden text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-2.5 rounded-lg transition-colors text-sm font-bold flex items-center">
+            <div class="p-5 md:p-6 border-t border-brand-sand bg-white/50 flex justify-between items-center rounded-b-3xl mt-auto backdrop-blur-md">
+                <button type="button" id="delete-btn" onclick="deleteCurrentPlan()" class="hidden text-brand-ink/40 hover:text-brand-clay hover:bg-brand-clay/10 px-4 py-2.5 rounded-full transition-colors text-sm font-bold flex items-center tracking-wide">
                     <i class="fa-regular fa-trash-can mr-1.5 text-lg"></i>刪除
                 </button>
                 <div class="flex gap-3 ml-auto w-full md:w-auto">
-                    <button type="button" onclick="closeModal()" class="md:hidden flex-1 px-4 py-2.5 rounded-lg text-slate-600 bg-white border border-slate-300 font-medium active:bg-slate-50">取消</button>
-                    <button type="button" id="save-btn" onclick="savePlan()" class="flex-1 md:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-bold shadow-sm transition-colors text-base">儲存</button>
+                    <button type="button" onclick="closeModal()" class="md:hidden flex-1 px-6 py-3 rounded-full text-brand-ink/70 bg-white border border-brand-sand font-medium active:bg-brand-sand/50 tracking-wide">取消</button>
+                    <button type="button" id="save-btn" onclick="savePlan()" class="flex-1 md:w-auto px-8 py-3 bg-brand-ink hover:bg-brand-ink/90 active:bg-brand-ink text-brand-paper rounded-full font-bold shadow-soft transition-colors text-base tracking-widest">儲存</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Toast 提示組件 -->
-    <div id="toast" class="fixed bottom-[80px] md:bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-5 py-2.5 rounded-full shadow-lg text-sm font-medium z-[200] hidden flex items-center">
-        <i class="fa-solid fa-check-circle text-green-400 mr-2"></i><span id="toast-msg"></span>
+    <div id="toast" class="fixed bottom-[100px] md:bottom-12 left-1/2 transform -translate-x-1/2 bg-brand-ink text-brand-paper px-6 py-3 rounded-full shadow-soft text-sm font-medium z-[200] hidden flex items-center tracking-wide">
+        <i class="fa-solid fa-check text-brand-sage mr-3"></i><span id="toast-msg"></span>
     </div>
 
-    <!-- -->
     <script>
         // 設定與常數
         const START_HOUR = 6;
         const END_HOUR = 23;
         const PIXELS_PER_MINUTE = 1.5; 
-        const STORAGE_KEY = 'my_weekly_schedule_data';
+        const STORAGE_KEY = 'ambient_weekly_schedule_data'; // 更改 key 以免與舊資料格式衝突
         
+        // 品牌專屬色調映射 (柔和質感)
         const themeClasses = {
-            blue: 'bg-blue-50 border-blue-400 text-blue-900', 
-            green: 'bg-green-50 border-green-400 text-green-900 hover:bg-green-100',
-            purple: 'bg-purple-50 border-purple-400 text-purple-900 hover:bg-purple-100',
-            orange: 'bg-orange-50 border-orange-400 text-orange-900 hover:bg-orange-100',
-            pink: 'bg-pink-50 border-pink-400 text-pink-900 hover:bg-pink-100'
+            sage: 'bg-[#8da399]/15 border-[#8da399] text-[#4a4a4a]', 
+            clay: 'bg-[#d4a59a]/15 border-[#d4a59a] text-[#4a4a4a]',
+            sand: 'bg-[#e6e2dd]/40 border-[#e6e2dd] text-[#4a4a4a]',
+            ink:  'bg-[#4a4a4a]/10 border-[#4a4a4a]/50 text-[#4a4a4a]',
+            // 固定行程預設使用 sand
+            fixed: 'bg-[#e6e2dd]/30 border-[#e6e2dd] text-[#4a4a4a]'
         };
 
         const dayNames = ['週日', '週一', '週二', '週三', '週四', '週五', '週六', '週日'];
         
-        // 手機版當前顯示星期 (1-7)
         let currentMobileDay = new Date().getDay() || 7; 
 
-        // 預設固定行程
+        // 預設固定行程 (將顏色轉換為品牌色)
         const defaultEvents = [
-            { id: 'f1', day: 1, start: '07:30', end: '08:30', title: '士林', type: 'fixed', color: 'blue' },
-            { id: 'f2', day: 1, start: '08:45', end: '09:45', title: '三重', type: 'fixed', color: 'blue' },
-            { id: 'f3', day: 2, start: '06:00', end: '07:00', title: '東門', type: 'fixed', color: 'blue' },
-            { id: 'f4', day: 3, start: '09:30', end: '10:30', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f5', day: 3, start: '11:00', end: '12:30', title: '林口A7', type: 'fixed', color: 'blue' },
-            { id: 'f6', day: 3, start: '14:00', end: '15:00', title: '龜山(復興一路)', type: 'fixed', color: 'blue' },
-            { id: 'f7', day: 3, start: '18:00', end: '19:00', title: '龜山 A8', type: 'fixed', color: 'blue' },
-            { id: 'f8', day: 3, start: '19:30', end: '20:30', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f9', day: 3, start: '20:30', end: '21:30', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f10', day: 4, start: '10:00', end: '12:00', title: '土城', type: 'fixed', color: 'blue' },
-            { id: 'f11', day: 4, start: '13:30', end: '14:30', title: '龜山(復興一路)', type: 'fixed', color: 'blue' },
-            { id: 'f12', day: 4, start: '15:00', end: '16:30', title: '龜山(文化三路)', type: 'fixed', color: 'blue' },
-            { id: 'f13', day: 4, start: '16:45', end: '17:45', title: '林口', type: 'fixed', color: 'blue' },
-            { id: 'f14', day: 4, start: '19:30', end: '20:30', title: '港墘', type: 'fixed', color: 'blue' },
-            { id: 'f15', day: 4, start: '20:30', end: '21:30', title: '港墘', type: 'fixed', color: 'blue' },
-            { id: 'f16', day: 5, start: '09:30', end: '10:30', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f17', day: 5, start: '11:00', end: '12:00', title: '中和', type: 'fixed', color: 'blue' },
-            { id: 'f18', day: 5, start: '17:30', end: '18:30', title: '林口', type: 'fixed', color: 'blue' },
-            { id: 'f19', day: 5, start: '19:00', end: '20:00', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f20', day: 6, start: '08:00', end: '09:00', title: '新莊(幸福路)', type: 'fixed', color: 'blue' },
-            { id: 'f21', day: 6, start: '11:00', end: '12:30', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f22', day: 6, start: '12:45', end: '14:15', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f23', day: 6, start: '14:30', end: '15:30', title: '龜山(大湖一路)', type: 'fixed', color: 'blue' },
-            { id: 'f24', day: 6, start: '16:00', end: '17:00', title: '林口', type: 'fixed', color: 'blue' },
-            { id: 'f25', day: 6, start: '17:30', end: '18:30', title: '林口(夢想之都)', type: 'fixed', color: 'blue' }
+            { id: 'f1', day: 1, start: '07:30', end: '08:30', title: '士林', type: 'fixed', color: 'fixed' },
+            { id: 'f2', day: 1, start: '08:45', end: '09:45', title: '三重', type: 'fixed', color: 'fixed' },
+            { id: 'f3', day: 2, start: '06:00', end: '07:00', title: '東門', type: 'fixed', color: 'fixed' },
+            { id: 'f4', day: 3, start: '09:30', end: '10:30', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f5', day: 3, start: '11:00', end: '12:30', title: '林口A7', type: 'fixed', color: 'fixed' },
+            { id: 'f6', day: 3, start: '14:00', end: '15:00', title: '龜山(復興一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f7', day: 3, start: '18:00', end: '19:00', title: '龜山 A8', type: 'fixed', color: 'fixed' },
+            { id: 'f8', day: 3, start: '19:30', end: '20:30', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f9', day: 3, start: '20:30', end: '21:30', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f10', day: 4, start: '10:00', end: '12:00', title: '土城', type: 'fixed', color: 'fixed' },
+            { id: 'f11', day: 4, start: '13:30', end: '14:30', title: '龜山(復興一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f12', day: 4, start: '15:00', end: '16:30', title: '龜山(文化三路)', type: 'fixed', color: 'fixed' },
+            { id: 'f13', day: 4, start: '16:45', end: '17:45', title: '林口', type: 'fixed', color: 'fixed' },
+            { id: 'f14', day: 4, start: '19:30', end: '20:30', title: '港墘', type: 'fixed', color: 'fixed' },
+            { id: 'f15', day: 4, start: '20:30', end: '21:30', title: '港墘', type: 'fixed', color: 'fixed' },
+            { id: 'f16', day: 5, start: '09:30', end: '10:30', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f17', day: 5, start: '11:00', end: '12:00', title: '中和', type: 'fixed', color: 'fixed' },
+            { id: 'f18', day: 5, start: '17:30', end: '18:30', title: '林口', type: 'fixed', color: 'fixed' },
+            { id: 'f19', day: 5, start: '19:00', end: '20:00', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f20', day: 6, start: '08:00', end: '09:00', title: '新莊(幸福路)', type: 'fixed', color: 'fixed' },
+            { id: 'f21', day: 6, start: '11:00', end: '12:30', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f22', day: 6, start: '12:45', end: '14:15', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f23', day: 6, start: '14:30', end: '15:30', title: '龜山(大湖一路)', type: 'fixed', color: 'fixed' },
+            { id: 'f24', day: 6, start: '16:00', end: '17:00', title: '林口', type: 'fixed', color: 'fixed' },
+            { id: 'f25', day: 6, start: '17:30', end: '18:30', title: '林口(夢想之都)', type: 'fixed', color: 'fixed' }
         ];
 
         // 讀取 Local Storage 資料
@@ -379,7 +448,7 @@
             if (savedData) {
                 events = JSON.parse(savedData);
             } else {
-                events = JSON.parse(JSON.stringify(defaultEvents)); // 深拷貝預設資料
+                events = JSON.parse(JSON.stringify(defaultEvents));
                 saveDataToStorage();
             }
         } catch (e) {
@@ -425,7 +494,6 @@
         }
 
         function applyMobileViewFilter() {
-            // 控制 Header 和 Column 在手機版只顯示 active day
             for (let i = 1; i <= 7; i++) {
                 const header = document.getElementById(`day-header-${i}`);
                 const col = document.getElementById(`day-col-${i}`);
@@ -438,16 +506,14 @@
                     if(col) { col.classList.add('hidden', 'md:block'); col.classList.remove('block'); }
                 }
             }
-            updateCurrentTime(); // 重新計算紅線位置
+            updateCurrentTime();
         }
 
-
-        //        function renderCalendar() {
+        function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
             const headerRow = document.getElementById('calendar-header-row');
             const linesContainer = document.getElementById('grid-lines-container');
             
-            // 清理舊資料 (保留 time-axis 和 background lines)
             const oldCols = grid.querySelectorAll('.day-column');
             oldCols.forEach(col => col.remove());
             
@@ -463,15 +529,14 @@
             const totalHeight = totalHours * 60 * PIXELS_PER_MINUTE;
             grid.style.height = `${totalHeight}px`;
 
-            // 1. 渲染水平網格虛線 (背景)
+            // 1. 渲染水平網格虛線 (品牌化沙色)
             for (let i = 0; i <= totalHours; i++) {
                 const line = document.createElement('div');
-                line.className = 'absolute w-full border-b border-slate-200';
+                line.className = 'absolute w-full border-b border-brand-sand';
                 line.style.top = `${i * 60 * PIXELS_PER_MINUTE}px`;
                 if(i !== totalHours) {
-                    // 半點虛線
                     const halfLine = document.createElement('div');
-                    halfLine.className = 'absolute w-full border-b border-dashed border-slate-100';
+                    halfLine.className = 'absolute w-full border-b border-dashed border-brand-sand/50';
                     halfLine.style.top = `${(i + 0.5) * 60 * PIXELS_PER_MINUTE}px`;
                     linesContainer.appendChild(halfLine);
                 }
@@ -484,7 +549,7 @@
             for (let i = 0; i <= totalHours; i++) {
                 const hour = START_HOUR + i;
                 const label = document.createElement('div');
-                label.className = 'absolute w-full text-center md:text-right md:pr-2 text-[10px] md:text-xs text-slate-500 font-medium bg-white';
+                label.className = 'absolute w-full text-center md:text-right md:pr-2 text-[10px] md:text-xs text-brand-ink/60 font-medium';
                 label.style.top = `${i * 60 * PIXELS_PER_MINUTE - 8}px`; 
                 label.innerText = `${hour.toString().padStart(2, '0')}:00`;
                 timeAxis.appendChild(label);
@@ -493,26 +558,22 @@
 
             // 3. 渲染 7 天的欄位與表頭
             for (let day = 1; day <= 7; day++) {
-                // 表頭
                 const headerCell = document.createElement('div');
                 headerCell.id = `day-header-${day}`;
-                headerCell.className = `day-header-cell flex-1 text-center py-2 md:py-3 font-semibold text-slate-700 border-r border-slate-200 hidden md:block`;
+                headerCell.className = `day-header-cell flex-1 text-center py-3 md:py-4 font-bold text-brand-ink border-r border-brand-sand hidden md:block tracking-wide`;
                 
-                // 今天特別標示
                 const today = new Date().getDay() || 7;
                 if (day === today) {
-                    headerCell.innerHTML = `<span class="bg-blue-600 text-white px-2 py-0.5 rounded-full text-sm shadow-sm">${dayNames[day]}</span>`;
+                    headerCell.innerHTML = `<span class="bg-brand-sage text-brand-paper px-3 py-1 rounded-full text-sm shadow-sm">${dayNames[day]}</span>`;
                 } else {
                     headerCell.innerText = dayNames[day];
                 }
                 headerRow.appendChild(headerCell);
 
-                // 行程欄位
                 const col = document.createElement('div');
                 col.id = `day-col-${day}`;
-                col.className = 'day-column cursor-pointer hover:bg-blue-50/20 transition-colors hidden md:block z-10'; 
+                col.className = 'day-column cursor-pointer hover:bg-brand-sand/20 transition-colors hidden md:block z-10'; 
                 
-                // 點擊空白處新增
                 col.addEventListener('click', (e) => {
                     if (e.target.closest('.event-card')) return;
                     const rect = col.getBoundingClientRect();
@@ -535,7 +596,6 @@
                     openModal(day.toString(), startStr, endStr);
                 });
                 
-                // 渲染該天的行程 (包含重疊計算)
                 const dayEvents = events.filter(e => parseInt(e.day) === day);
                 dayEvents.sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
                 
@@ -588,9 +648,12 @@
                     const duration = endMin - topMin;
                     
                     const el = document.createElement('div');
-                    const colorClass = themeClasses[event.color] || themeClasses.green;
+                    // 確保使用設定好的品牌顏色
+                    let eventColor = event.color;
+                    if (!themeClasses[eventColor]) eventColor = event.type === 'fixed' ? 'fixed' : 'sage';
+                    const colorClass = themeClasses[eventColor];
                     
-                    el.className = `event-card flex flex-col ${colorClass}`;
+                    el.className = `event-card flex flex-col backdrop-blur-[2px] ${colorClass}`;
                     el.style.top = `${topMin * PIXELS_PER_MINUTE}px`;
                     el.style.height = `${duration * PIXELS_PER_MINUTE}px`;
                     
@@ -600,22 +663,22 @@
                     el.style.width = `calc(${widthPercent}% - 4px)`;
                     
                     let innerHTML = `
-                        <div class="font-bold truncate text-[11px] md:text-sm leading-tight ${event.type !== 'fixed' ? 'pr-4' : ''}">${event.title}</div>
-                        <div class="text-[9px] md:text-[10px] opacity-85 mt-[1px] md:mt-0.5 flex items-center">
+                        <div class="font-bold truncate text-[11px] md:text-sm leading-tight tracking-wide ${event.type !== 'fixed' ? 'pr-4' : ''}">${event.title}</div>
+                        <div class="text-[9px] md:text-[10px] opacity-70 mt-[1px] md:mt-0.5 flex items-center font-medium">
                             <i class="fa-regular fa-clock mr-1 scale-75 hidden md:inline"></i>${event.start}
                         </div>
                     `;
                     
                     if (event.type !== 'fixed') {
                         innerHTML += `
-                            <button onclick="deletePlanQuick(event, '${event.id}')" class="absolute top-0.5 right-0.5 md:top-1 md:right-1 w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 text-current opacity-60 hover:opacity-100 transition-all z-20">
-                                <i class="fa-solid fa-xmark text-xs md:text-sm"></i>
+                            <button onclick="deletePlanQuick(event, '${event.id}')" class="absolute top-0.5 right-0.5 md:top-1 md:right-1 w-5 h-5 flex items-center justify-center rounded-full hover:bg-brand-ink/10 text-current opacity-40 hover:opacity-100 transition-all z-20">
+                                <i class="fa-solid fa-xmark text-[10px] md:text-xs"></i>
                             </button>
                         `;
                     }
                     
                     if (event.notes) {
-                        innerHTML += `<div class="mt-auto text-[9px] opacity-70 truncate"><i class="fa-regular fa-file-lines mr-1"></i><span class="hidden md:inline">${event.notes}</span></div>`;
+                        innerHTML += `<div class="mt-auto text-[9px] opacity-60 truncate font-medium"><i class="fa-solid fa-feather-pointed mr-1"></i><span class="hidden md:inline">${event.notes}</span></div>`;
                     }
                     el.innerHTML = innerHTML;
                     
@@ -634,8 +697,7 @@
             document.getElementById('mobile-day-label').innerText = dayNames[currentMobileDay];
         }
 
-
-        //        const modal = document.getElementById('plan-modal');
+        const modal = document.getElementById('plan-modal');
 
         function showError(msg) {
             const errorDiv = document.getElementById('error-msg');
@@ -645,7 +707,6 @@
         }
 
         function openModalFromButton() {
-            // 手機版新增時，預設帶入目前顯示的星期
             const isMobile = window.innerWidth < 768;
             let targetDay = isMobile ? currentMobileDay.toString() : (new Date().getDay() || 7).toString();
             openModal(targetDay, '12:00', '13:00');
@@ -653,7 +714,6 @@
 
         function openModal(defaultDay = '1', defaultStart = '12:00', defaultEnd = '13:00', editData = null) {
             modal.classList.remove('hidden');
-            // Trigger reflow for animation
             void modal.offsetWidth; 
             modal.classList.add('flex', 'modal-enter');
             modal.classList.remove('opacity-0');
@@ -667,14 +727,16 @@
                 const el = document.getElementById(id);
                 el.disabled = isFixed;
                 if(isFixed) {
-                    el.classList.add('bg-slate-100', 'text-slate-500');
+                    el.classList.add('bg-brand-sand/30', 'text-brand-ink/50');
+                    el.classList.remove('bg-white/80');
                 } else {
-                    el.classList.remove('bg-slate-100', 'text-slate-500');
+                    el.classList.remove('bg-brand-sand/30', 'text-brand-ink/50');
+                    el.classList.add('bg-white/80');
                 }
             });
             
             if (editData) {
-                document.getElementById('modal-title').innerHTML = isFixed ? '<i class="fa-solid fa-thumbtack text-blue-500 mr-2"></i>編輯標籤/備註' : '<i class="fa-solid fa-pen-to-square text-blue-500 mr-2"></i>編輯計畫';
+                document.getElementById('modal-title').innerHTML = isFixed ? '<i class="fa-solid fa-thumbtack text-brand-clay mr-3"></i>標籤 / 備註' : '<i class="fa-solid fa-pen-nib text-brand-sage mr-3"></i>編輯計畫';
                 document.getElementById('plan-id').value = editData.id;
                 document.getElementById('plan-title').value = editData.title;
                 document.getElementById('plan-day').value = editData.day;
@@ -683,7 +745,7 @@
                 document.getElementById('plan-notes').value = editData.notes || '';
                 
                 const radios = document.getElementsByName('plan-color');
-                const targetColor = editData.color || (isFixed ? 'blue' : 'green');
+                const targetColor = editData.color === 'fixed' ? 'sand' : (editData.color || 'sage');
                 for(let r of radios) { r.checked = (r.value === targetColor); }
                 
                 if (isFixed) {
@@ -692,7 +754,7 @@
                     document.getElementById('delete-btn').classList.remove('hidden');
                 }
             } else {
-                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-calendar-plus text-blue-500 mr-2"></i>新增個人計畫';
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen-nib text-brand-sage mr-3"></i>新增計畫';
                 document.getElementById('plan-id').value = '';
                 document.getElementById('plan-title').value = '';
                 document.getElementById('plan-day').value = defaultDay;
@@ -700,7 +762,7 @@
                 document.getElementById('plan-end').value = defaultEnd;
                 document.getElementById('plan-notes').value = '';
                 
-                document.getElementsByName('plan-color')[1].checked = true; // Default Green
+                document.getElementsByName('plan-color')[0].checked = true; // Default Sage
                 
                 document.getElementById('delete-btn').classList.add('hidden');
             }
@@ -709,6 +771,11 @@
                 setTimeout(() => document.getElementById('plan-title').focus(), 300);
             }
         }
+        
+        function editPlan(id) {
+            const plan = events.find(e => e.id === id);
+            if (plan) openModal(plan.day, plan.start, plan.end, plan);
+        }
 
         function closeModal() {
             modal.classList.remove('modal-enter');
@@ -716,7 +783,7 @@
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-            }, 300); // 配合 CSS transition 延遲隱藏
+            }, 300); 
         }
 
         function savePlan() {
@@ -727,7 +794,7 @@
             const end = document.getElementById('plan-end').value;
             const notes = document.getElementById('plan-notes').value.trim();
             
-            let color = 'green';
+            let color = 'sage';
             const colorRadios = document.getElementsByName('plan-color');
             for(let r of colorRadios) { if(r.checked) color = r.value; }
 
@@ -735,7 +802,7 @@
             const isFixed = existingPlanIndex !== -1 && events[existingPlanIndex].type === 'fixed';
 
             if (!isFixed) {
-                if (!title) { showError('請填寫行程名稱'); return; }
+                if (!title) { showError('請填寫計畫名稱'); return; }
                 if (!start || !end) { showError('請設定完整的時間'); return; }
                 if (start >= end) { showError('結束時間必須晚於開始時間'); return; }
                 if (timeToMinutes(start) < 0 || timeToMinutes(end) > (END_HOUR - START_HOUR) * 60) {
@@ -750,13 +817,12 @@
                 } else {
                     events[existingPlanIndex] = { ...events[existingPlanIndex], title, day: parseInt(day), start, end, notes, color };
                 }
-                showToast('計畫已更新儲存');
+                showToast('計畫已更新');
             } else {
                 const planData = { id: 'custom_' + Date.now(), day: parseInt(day), start, end, title, type: 'custom', color, notes };
                 events.push(planData);
                 showToast('已新增計畫');
                 
-                // 如果在手機版，新增後自動切換到該行程所在的星期
                 if(window.innerWidth < 768 && currentMobileDay !== parseInt(day)) {
                     currentMobileDay = parseInt(day);
                 }
@@ -787,7 +853,7 @@
             showToast('計畫已刪除');
         }
 
-        //        function updateCurrentTime() {
+        function updateCurrentTime() {
             const existingLine = document.getElementById('current-time-indicator');
             if (existingLine) existingLine.remove();
 
@@ -800,7 +866,6 @@
                 const totalMins = (hours - START_HOUR) * 60 + minutes;
                 const topPos = totalMins * PIXELS_PER_MINUTE;
 
-                // 只有當「當天」欄位顯示時才畫紅線
                 const todayCol = document.getElementById(`day-col-${dayOfWeek}`);
                 if (todayCol && !todayCol.classList.contains('hidden')) {
                     const indicator = document.createElement('div');
@@ -817,7 +882,6 @@
             }
         }
 
-        // 防抖動(Debounce) 處理視窗縮放
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
