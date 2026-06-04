@@ -121,6 +121,8 @@
             overflow-y: auto;
             overflow-x: hidden;
             position: relative;
+            /* 限制手機版只允許上下垂直捲動，水平滑動交由 JS 手勢判定 */
+            touch-action: pan-y; 
         }
         .calendar-grid {
             display: flex;
@@ -216,6 +218,15 @@
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px) translateX(-50%); }
             to { opacity: 1; transform: translateY(0) translateX(-50%); }
+        }
+
+        /* 手機版左右滑動切換時的淡入動效 */
+        @keyframes dayFadeIn {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-fade-active {
+            animation: dayFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
@@ -403,7 +414,7 @@
             sage: 'bg-[#8da399]/15 border-[#8da399] text-[#4a4a4a]', 
             clay: 'bg-[#d4a59a]/15 border-[#d4a59a] text-[#4a4a4a]',
             sand: 'bg-[#e6e2dd]/40 border-[#e6e2dd] text-[#4a4a4a]',
-            ink:  'bg-[#4a4a4a]/10 border-[#4a4a4a]/50 text-[#4a4a4a]',
+            text:  'bg-[#4a4a4a]/10 border-[#4a4a4a]/50 text-[#4a4a4a]',
             // 固定行程預設使用 sand
             fixed: 'bg-[#e6e2dd]/30 border-[#e6e2dd] text-[#4a4a4a]'
         };
@@ -499,11 +510,29 @@
                 const col = document.getElementById(`day-col-${i}`);
                 
                 if (i === currentMobileDay) {
-                    if(header) { header.classList.remove('hidden'); header.classList.add('block', 'md:block'); }
-                    if(col) { col.classList.remove('hidden'); col.classList.add('block', 'md:block'); }
+                    if(header) { 
+                        header.classList.remove('hidden'); 
+                        header.classList.add('block', 'md:block'); 
+                    }
+                    if(col) { 
+                        col.classList.remove('hidden'); 
+                        col.classList.add('block', 'md:block'); 
+                        // 在手機版切換時加入精緻的淡入微動效
+                        if (window.innerWidth < 768) {
+                            col.classList.remove('mobile-fade-active');
+                            void col.offsetWidth; // 強制瀏覽器重繪 (reflow)
+                            col.classList.add('mobile-fade-active');
+                        }
+                    }
                 } else {
-                    if(header) { header.classList.add('hidden', 'md:block'); header.classList.remove('block'); }
-                    if(col) { col.classList.add('hidden', 'md:block'); col.classList.remove('block'); }
+                    if(header) { 
+                        header.classList.add('hidden', 'md:block'); 
+                        header.classList.remove('block'); 
+                    }
+                    if(col) { 
+                        col.classList.add('hidden', 'md:block'); 
+                        col.classList.remove('block', 'mobile-fade-active'); 
+                    }
                 }
             }
             updateCurrentTime();
@@ -882,6 +911,45 @@
             }
         }
 
+        // --- 手機版左右滑動手勢偵測 ---
+        function setupSwipeGestures() {
+            const scrollArea = document.getElementById('calendar-scroll-area');
+            let touchstartX = 0;
+            let touchstartY = 0;
+            let touchendX = 0;
+            let touchendY = 0;
+
+            scrollArea.addEventListener('touchstart', (e) => {
+                // 如果彈出視窗（Modal）是開啟狀態，不觸發行程表滑動切換
+                if (!modal.classList.contains('hidden')) return;
+                touchstartX = e.changedTouches[0].clientX;
+                touchstartY = e.changedTouches[0].clientY;
+            }, { passive: true });
+
+            scrollArea.addEventListener('touchend', (e) => {
+                if (!modal.classList.contains('hidden')) return;
+                touchendX = e.changedTouches[0].clientX;
+                touchendY = e.changedTouches[0].clientY;
+                
+                const diffX = touchendX - touchstartX;
+                const diffY = touchendY - touchstartY;
+                
+                // 觸發門檻：
+                // 1. 僅在手機版（視窗寬度 < 768px）生效
+                // 2. 水平移動位移必須大於 50 像素（防止極微小誤觸）
+                // 3. 水平移動位移必須大於垂直位移（防止與上下捲動時間軸衝突）
+                if (window.innerWidth < 768 && Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+                    if (diffX > 0) {
+                        // 從左向右滑動（Swipe Right） -> 切換至「前一天」
+                        changeMobileDay(-1);
+                    } else {
+                        // 從右向左滑動（Swipe Left） -> 切換至「後一天」
+                        changeMobileDay(1);
+                    }
+                }
+            }, { passive: true });
+        }
+
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
@@ -902,6 +970,9 @@
             } else {
                 scrollArea.scrollTop = 2 * 60 * PIXELS_PER_MINUTE; 
             }
+            
+            // 啟用滑動手勢
+            setupSwipeGestures();
             
             setInterval(updateCurrentTime, 60000);
         });
